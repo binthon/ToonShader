@@ -3,71 +3,77 @@ import axios from 'axios';
 
 function App() {
   const [file, setFile] = useState(null);
-  const [image, setImage] = useState(null);
   const [k, setK] = useState(5);
+  const [suggestedK, setSuggestedK] = useState(5);
   const [result, setResult] = useState(null);
 
-  const processImage = async (file, k) => {
+  const handleUpload = async (e) => {
+    const uploaded = e.target.files[0];
+    if (!uploaded) return;
+    setFile(uploaded);
+
+    const formData = new FormData();
+    formData.append("file", uploaded);
+    const analyzeRes = await axios.post("http://localhost:8000/analyze/", formData);
+    const kValue = analyzeRes.data.suggested_k;
+    setSuggestedK(kValue);
+    setK(kValue);
+  };
+
+  const processImage = async (file, kVal) => {
     const formData = new FormData();
     formData.append("file", file);
-    formData.append("k", k);
+    formData.append("k", kVal);
     const res = await axios.post("http://localhost:8000/process/", formData, {
       responseType: "blob",
     });
     setResult(URL.createObjectURL(res.data));
   };
 
-  const handleUpload = (e) => {
-    const uploadedFile = e.target.files[0];
-    if (uploadedFile) {
-      setFile(uploadedFile);
-      setImage(URL.createObjectURL(uploadedFile));
-    }
-  };
-
   useEffect(() => {
     if (file) {
       const timeout = setTimeout(() => {
-        processImage(file, k);
-      }, 300);
+        processImage(file, parseInt(k));
+      }, 800);
       return () => clearTimeout(timeout);
     }
-  }, [k, file]);
+  }, [k]);
 
   return (
-    <div className="w-screen h-screen bg-white p-8 box-border font-sans">
-      <div className="flex justify-between">
-        {/* Lewa góra */}
-        <div className="flex flex-col">
+    <div className="w-screen h-screen bg-white p-8 box-border font-sans overflow-auto">
+      <div className="flex flex-row justify-between h-full gap-8">
+        {/* Lewa kolumna */}
+        <div className="flex flex-col max-w-[30vw]">
           <h1 className="text-3xl font-bold mb-6">Toon Shader Demo</h1>
           <input type="file" onChange={handleUpload} className="mb-4" />
+          {file && <p className="text-sm text-gray-600">{file.name}</p>}
         </div>
 
-        {/* Prawa – kontener z obrazami i suwakiem */}
-        <div className="w-[600px] flex flex-col items-center">
-          {/* Obrazki w kontenerze */}
-          <div className="flex justify-center items-center gap-4 border border-gray-300 rounded-md p-4 w-full h-[250px] bg-gray-50">
-            {image ? (
-              <>
-                <img src={image} alt="Oryginał" className="w-[240px] rounded shadow" />
-                <img src={result} alt="Wynik" className="w-[240px] rounded shadow" />
-              </>
+        {/* Prawa kolumna */}
+        <div className="flex flex-col items-end w-full">
+          <div className="border border-gray-300 rounded-md p-4 bg-gray-50 max-w-[65vw] w-full flex justify-center items-center min-h-[300px]">
+            {result ? (
+              <img
+                src={result}
+                alt="Toon shader"
+                className="w-full h-auto max-h-[80vh] rounded shadow"
+              />
             ) : (
               <p className="text-gray-400 text-sm">Brak obrazu. Wgraj plik po lewej stronie.</p>
             )}
           </div>
 
-          {/* Suwak */}
-          <div className="w-full mt-6">
+          <div className="max-w-[65vw] w-full mt-6">
             <label className="text-sm font-medium text-gray-700 block mb-2">
-              Number of Colors: {k}
+              Współczynnik kreskówkowania (k): {k}
             </label>
             <input
               type="range"
-              min="2"
-              max="10"
+              min={2}
+              max={suggestedK}
               value={k}
-              onChange={(e) => setK(e.target.value)}
+              onChange={(e) => setK(Number(e.target.value))}
+              disabled={!file}
               className="w-full"
             />
           </div>
