@@ -53,14 +53,11 @@ async def analyze_image(file: UploadFile = File(...), edge_method: str = Form("c
     else:
         edges = cv2.Canny(gray, 50, 150)
 
-    edge_density = np.sum(edges > 0) / edges.size
-    norm_k = int(np.interp(edge_density, [0.005, 0.15], [1, 20]))
-    norm_k = max(1, min(20, norm_k))
-
-    return {"suggested_k": norm_k}
-
-
-
+    edge_count = int(np.sum(edges > 0))
+    height, width = edges.shape
+    density = edge_count / (height * width)
+    k = int(np.interp(density, [0.01, 0.2], [2, 30]))
+    return {"suggested_k": k}
 
 @app.post("/process/")
 async def process_image(file: UploadFile = File(...), k: int = Form(5)):
