@@ -22,7 +22,7 @@ def resize_image(img, max_dim=800):
     return img
 
 @app.post("/analyze/")
-async def analyze_image(file: UploadFile = File(...)):
+async def analyze_image(file: UploadFile = File(...), edge_method: str = Form("canny")):
     content = await file.read()
     img_np = np.frombuffer(content, np.uint8)
     img = cv2.imdecode(img_np, cv2.IMREAD_COLOR)
@@ -31,10 +31,36 @@ async def analyze_image(file: UploadFile = File(...)):
         return JSONResponse(content={"error": "Nie udało się odczytać obrazu."}, status_code=400)
 
     img = resize_image(img)
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
-    unique_colors = len(np.unique(img.reshape(-1, img.shape[2]), axis=0))
-    suggested_k = min(30, max(3, unique_colors // 32))
-    return {"suggested_k": suggested_k}
+    if edge_method == "sobel":
+        sobelx = cv2.Sobel(gray, cv2.CV_8U, 1, 0, ksize=3)
+        sobely = cv2.Sobel(gray, cv2.CV_8U, 0, 1, ksize=3)
+        edges = cv2.bitwise_or(sobelx, sobely)
+    elif edge_method == "laplacian":
+        edges = cv2.Laplacian(gray, cv2.CV_8U)
+    elif edge_method == "adaptive":
+        edges = cv2.adaptiveThreshold(
+            gray, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY_INV, 11, 2)
+    elif edge_method == "dog":
+        blur1 = cv2.GaussianBlur(gray, (5, 5), 1)
+        blur2 = cv2.GaussianBlur(gray, (5, 5), 2)
+        edges = cv2.absdiff(blur1, blur2)
+        _, edges = cv2.threshold(edges, 15, 255, cv2.THRESH_BINARY)
+    elif edge_method == "gaussian":
+        edges = cv2.GaussianBlur(gray, (5, 5), 1)
+        _, edges = cv2.threshold(edges, 127, 255, cv2.THRESH_BINARY)
+    else:
+        edges = cv2.Canny(gray, 50, 150)
+
+    edge_density = np.sum(edges > 0) / edges.size
+    norm_k = int(np.interp(edge_density, [0.005, 0.15], [1, 20]))
+    norm_k = max(1, min(20, norm_k))
+
+    return {"suggested_k": norm_k}
+
+
+
 
 @app.post("/process/")
 async def process_image(file: UploadFile = File(...), k: int = Form(5)):
