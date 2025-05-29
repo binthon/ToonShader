@@ -98,7 +98,7 @@ function App() {
         <div className="flex flex-col max-w-[30vw]">
           <h1 className="text-3xl font-bold mb-6">Toon Shader Demo</h1>
           <input type="file" onChange={handleUpload} className="mb-4" />
-          {file && <p className="text-sm text-gray-600 mb-4">{file.name}</p>}
+        
 
           <label className="text-sm font-medium text-gray-700 mb-2">Algorytm krawędzi:</label>
           <Listbox value={edgeMethod} onChange={handleEdgeMethodChange} disabled={!file}>
