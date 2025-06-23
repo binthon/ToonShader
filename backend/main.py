@@ -81,7 +81,8 @@ async def process_image(
     brightness: float = Form(1.0),
     stroke_enabled: int = Form(1),
     use_halftone: int = Form(0),  # nowy
-    style_mode: str = Form("toon")  # możesz usunąć jeśli nieużywane
+    edge_method: str = Form("canny"),
+    
 ):
     content = await file.read()
     img_np = np.frombuffer(content, np.uint8)
@@ -97,7 +98,32 @@ async def process_image(
     color = cv2.bilateralFilter(img, 9, 75, 75)
 
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    edges = cv2.Canny(gray, 50, 150)
+
+    # wybór algorytmu
+    if edge_method == "sobel":
+        sobelx = cv2.Sobel(gray, cv2.CV_8U, 1, 0, ksize=3)
+        sobely = cv2.Sobel(gray, cv2.CV_8U, 0, 1, ksize=3)
+        edges = cv2.bitwise_or(sobelx, sobely)
+    elif edge_method == "laplacian":
+        edges = cv2.Laplacian(gray, cv2.CV_8U)
+    elif edge_method == "adaptive":
+        edges = cv2.adaptiveThreshold(
+            gray, 255,
+            cv2.ADAPTIVE_THRESH_MEAN_C,
+            cv2.THRESH_BINARY_INV,
+            11, 2
+        )
+    elif edge_method == "dog":
+        blur1 = cv2.GaussianBlur(gray, (5, 5), 1)
+        blur2 = cv2.GaussianBlur(gray, (5, 5), 2)
+        edges = cv2.absdiff(blur1, blur2)
+        _, edges = cv2.threshold(edges, 15, 255, cv2.THRESH_BINARY)
+    elif edge_method == "gaussian":
+        blurred = cv2.GaussianBlur(gray, (5, 5), 1)
+        _, edges = cv2.threshold(blurred, 127, 255, cv2.THRESH_BINARY)
+    else:  # domyślnie Canny
+        edges = cv2.Canny(gray, 50, 150)
+
     edges_inv = cv2.bitwise_not(edges)
     edges_rgb = cv2.cvtColor(edges_inv, cv2.COLOR_GRAY2BGR)
 
@@ -168,7 +194,7 @@ async def preview_image(file: UploadFile = File(...), edge_method: str = Form(..
         edges = cv2.GaussianBlur(gray, (5, 5), 1)
         _, edges = cv2.threshold(edges, 127, 255, cv2.THRESH_BINARY)
     else:
-        edges = cv2.Canny(gray, 50, 150)
+        edges = cv2.Canny(gray, 100, 200)
 
     edges_rgb = cv2.cvtColor(edges, cv2.COLOR_GRAY2BGR)
     _, img_encoded = cv2.imencode('.png', edges_rgb)
