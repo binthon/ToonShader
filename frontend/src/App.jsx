@@ -72,18 +72,20 @@ function App() {
     const analyzedK = await analyzeImage(uploaded, edgeMethod);
     setSuggestedK(analyzedK);
     setupSliderFromK(analyzedK);
+    setShouldProcess(true); 
   };
 
-  const handleEdgeMethodChange = async (newMethod) => {
-    setEdgeMethod(newMethod);
-    setShouldProcess(false);
-    if (file) {
-      const analyzedK = await analyzeImage(file, newMethod);
-      setSuggestedK(analyzedK);
-      setupSliderFromK(analyzedK);
-      setResult(null);
-    }
-  };
+const handleEdgeMethodChange = async (newMethod) => {
+  setEdgeMethod(newMethod);
+  setShouldProcess(false); // <- możesz też to usunąć
+  if (file) {
+    const analyzedK = await analyzeImage(file, newMethod);
+    setSuggestedK(analyzedK);
+    setupSliderFromK(analyzedK);
+    setResult(null);
+    setShouldProcess(true); // <=== TO JEST KLUCZ
+  }
+};
 
   const processImage = async (file, kVal, method) => {
     setIsLoading(true);
