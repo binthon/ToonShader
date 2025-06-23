@@ -22,6 +22,10 @@ function App() {
   const [shouldProcess, setShouldProcess] = useState(false);
   const [originalUrl, setOriginalUrl] = useState(null);
   const [suggestedK, setSuggestedK] = useState(null);
+  const [previews, setPreviews] = useState({});
+  const [brightness, setBrightness] = useState(1.0);
+  const [strokeEnabled, setStrokeEnabled] = useState(true);
+  
 
   const analyzeImage = async (uploadedFile, method) => {
     const formData = new FormData();
@@ -49,11 +53,24 @@ function App() {
     setFile(uploaded);
     setOriginalUrl(URL.createObjectURL(uploaded));
     setShouldProcess(false);
+    setResult(null);
+
+    // podglądy
+    const newPreviews = {};
+    for (const method of edgeMethods) {
+      const formData = new FormData();
+      formData.append('file', uploaded);
+      formData.append('edge_method', method.id);
+      const res = await axios.post('http://localhost:8000/preview/', formData, {
+        responseType: 'blob',
+      });
+      newPreviews[method.id] = URL.createObjectURL(res.data);
+    }
+    setPreviews(newPreviews);
 
     const analyzedK = await analyzeImage(uploaded, edgeMethod);
     setSuggestedK(analyzedK);
     setupSliderFromK(analyzedK);
-    setResult(null);
   };
 
   const handleEdgeMethodChange = async (newMethod) => {
@@ -68,16 +85,20 @@ function App() {
   };
 
   const processImage = async (file, kVal, method) => {
-  const scaledK = Math.round(Math.max(2, Math.min(30, kVal))); 
-  const formData = new FormData();
-  formData.append('file', file);
-  formData.append('k', scaledK);
-  formData.append('edge_method', method);
-  const res = await axios.post('http://localhost:8000/process/', formData, {
-    responseType: 'blob',
-  });
-  setResult(URL.createObjectURL(res.data));
-};
+    const scaledK = Math.round(Math.max(2, Math.min(30, kVal))); 
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('k', scaledK);
+    formData.append('edge_method', method);
+    formData.append('brightness', brightness);
+    formData.append('stroke_enabled', strokeEnabled ? 1 : 0);
+
+
+    const res = await axios.post('http://localhost:8000/process/', formData, {
+      responseType: 'blob',
+    });
+    setResult(URL.createObjectURL(res.data));
+  };
 
   useEffect(() => {
   if (file && shouldProcess) {
@@ -101,34 +122,31 @@ function App() {
         
 
           <label className="text-sm font-medium text-gray-700 mb-2">Algorytm krawędzi:</label>
-          <Listbox value={edgeMethod} onChange={handleEdgeMethodChange} disabled={!file}>
-            <div className="w-full border border-gray-300 rounded p-2">
-              {edgeMethods.map((method) => (
-                <Listbox.Option
-                  key={method.id}
-                  value={method.id}
-                  className={({ active, selected }) =>
-                    `cursor-pointer px-3 py-2 rounded 
-                    ${selected ? 'bg-blue-500 text-white font-bold' : ''}
-                    ${!selected && active ? 'bg-blue-100' : ''}`
-                  }
-                >
-                  {method.name}
-                </Listbox.Option>
-              ))}
+        <div className="grid grid-cols-2 gap-4 mb-4">
+          {edgeMethods.map((method) => (
+            <div key={method.id} className="cursor-pointer" onClick={() => handleEdgeMethodChange(method.id)}>
+              <img
+                src={previews[method.id]}
+                alt={method.name}
+                className={`w-24 h-24 object-cover rounded border-2 ${
+                  edgeMethod === method.id ? 'border-blue-500' : 'border-transparent'
+                }`}
+              />
+              <p className="text-xs text-center mt-1">{method.name}</p>
             </div>
-          </Listbox>
+          ))}
+        </div>
         </div>
 
         {/* Prawa kolumna */}
         <div className="flex flex-col items-end w-full">
-          <div className="border border-gray-300 rounded-md p-4 bg-gray-50 max-w-[65vw] w-full flex justify-center items-center min-h-[300px]">
+          <div className="border border-gray-300 rounded-md p-4 bg-gray-50 max-w-[65vw] w-full flex justify-center items-center min-h-[300px] overflow-hidden">
             {(result || originalUrl) ? (
-              <img
-                src={result || originalUrl}
-                alt="Toon shader"
-                className="w-full h-auto max-h-[80vh] rounded shadow"
-              />
+            <img
+              src={result || originalUrl}
+              alt="Toon shader"
+              className="max-w-full max-h-[75vh] object-contain rounded shadow"
+            />
             ) : (
               <p className="text-gray-400 text-sm">Brak obrazu. Wgraj plik po lewej stronie.</p>
             )}
@@ -152,6 +170,41 @@ function App() {
               className="w-full"
             />
           </div>
+          <div className="max-w-[65vw] w-full mt-4">
+  <label className="text-sm font-medium text-gray-700 block mb-2">
+    Posterizacja jasności (Brightness Posterization): {brightness.toFixed(2)}
+  </label>
+  <input
+    type="range"
+    min={0.1}
+    max={1.0}
+    step={0.05}
+    value={brightness}
+    onChange={(e) => {
+      setBrightness(parseFloat(e.target.value));
+      setShouldProcess(true);
+    }}
+    disabled={!file}
+    className="w-full"
+  />
+</div>
+
+<div className="max-w-[65vw] w-full mt-4">
+  <label className="text-sm font-medium text-gray-700 block mb-2">
+    Kreskowanie w tle (ENABLE)
+  </label>
+  <input
+    type="checkbox"
+    checked={strokeEnabled}
+    onChange={(e) => {
+      setStrokeEnabled(e.target.checked);
+      setShouldProcess(true);
+    }}
+    disabled={!file}
+  />
+  
+</div>
+
         </div>
       </div>
     </div>
