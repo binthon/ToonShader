@@ -25,6 +25,8 @@ function App() {
   const [previews, setPreviews] = useState({});
   const [brightness, setBrightness] = useState(1.0);
   const [strokeEnabled, setStrokeEnabled] = useState(true);
+  const [useHalftone, setUseHalftone] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   
 
   const analyzeImage = async (uploadedFile, method) => {
@@ -85,19 +87,26 @@ function App() {
   };
 
   const processImage = async (file, kVal, method) => {
-    const scaledK = Math.round(Math.max(2, Math.min(30, kVal))); 
+    setIsLoading(true); // <== dodaj
+    const scaledK = Math.round(Math.max(2, Math.min(30, kVal)));
     const formData = new FormData();
     formData.append('file', file);
     formData.append('k', scaledK);
     formData.append('edge_method', method);
     formData.append('brightness', brightness);
     formData.append('stroke_enabled', strokeEnabled ? 1 : 0);
+    formData.append('use_halftone', useHalftone ? 1 : 0);
 
-
-    const res = await axios.post('http://localhost:8000/process/', formData, {
-      responseType: 'blob',
-    });
-    setResult(URL.createObjectURL(res.data));
+    try {
+      const res = await axios.post('http://localhost:8000/process/', formData, {
+        responseType: 'blob',
+      });
+      setResult(URL.createObjectURL(res.data));
+    } catch (err) {
+      console.error("Błąd przetwarzania:", err);
+    } finally {
+      setIsLoading(false); // <== dodaj
+    }
   };
 
   useEffect(() => {
@@ -141,15 +150,23 @@ function App() {
         {/* Prawa kolumna */}
         <div className="flex flex-col items-end w-full">
           <div className="border border-gray-300 rounded-md p-4 bg-gray-50 max-w-[65vw] w-full flex justify-center items-center min-h-[300px] overflow-hidden">
-            {(result || originalUrl) ? (
-            <img
-              src={result || originalUrl}
-              alt="Toon shader"
-              className="max-w-full max-h-[75vh] object-contain rounded shadow"
-            />
+          <div className="relative w-full flex justify-center items-center max-h-[75vh]">
+            {result || originalUrl ? (
+              <img
+                src={result || originalUrl}
+                alt="Toon shader"
+                className="max-w-full max-h-[75vh] object-contain rounded shadow"
+              />
             ) : (
               <p className="text-gray-400 text-sm">Brak obrazu. Wgraj plik po lewej stronie.</p>
             )}
+
+            {isLoading && (
+              <div className="absolute inset-0 flex items-center justify-center bg-black/10 rounded">
+                <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+              </div>
+            )}
+          </div>
           </div>
 
           <div className="max-w-[65vw] w-full mt-6">
@@ -202,7 +219,18 @@ function App() {
     }}
     disabled={!file}
   />
-  
+    <label className="text-sm font-medium text-gray-700 block mb-2">
+    Efekt halftone (komiksowe kropki)
+  </label>
+  <input
+    type="checkbox"
+    checked={useHalftone}
+    onChange={(e) => {
+      setUseHalftone(e.target.checked);
+      setShouldProcess(true);
+    }}
+    disabled={!file}
+  />
 </div>
 
         </div>
