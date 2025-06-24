@@ -3,6 +3,15 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import Response, JSONResponse
 import numpy as np
 import cv2
+import subprocess
+import tempfile
+import os
+import uuid
+import shutil
+from fastapi import UploadFile, File, Form, Response
+import os, uuid, tempfile, subprocess
+import cv2, numpy as np
+
 
 app = FastAPI()
 
@@ -239,3 +248,112 @@ async def best_edge_method(file: UploadFile = File(...)):
     best = min(results, key=lambda x: abs(x[1] - ideal_density))
 
     return {"best_method": best[0], "density": round(best[1], 4)}
+
+
+@app.post("/process-video/")
+async def process_video(
+    file: UploadFile = File(...),
+    k: int = Form(5),
+    brightness: float = Form(1.0),
+    stroke_enabled: int = Form(1),
+    use_halftone: int = Form(0),
+    edge_method: str = Form("canny")
+):
+    temp_dir = tempfile.gettempdir()
+    temp_input_path = os.path.join(temp_dir, f"{uuid.uuid4()}.mp4")
+    temp_output_raw = os.path.join(temp_dir, f"{uuid.uuid4()}_raw.mp4")
+    temp_output_final = os.path.join(temp_dir, f"{uuid.uuid4()}_final.mp4")
+
+    with open(temp_input_path, "wb") as f:
+        f.write(await file.read())
+
+    cap = cv2.VideoCapture(temp_input_path)
+    fourcc = cv2.VideoWriter_fourcc(*'mp4v')  # surowe wyjście
+    fps = cap.get(cv2.CAP_PROP_FPS)
+    w = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+    h = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+
+    out = cv2.VideoWriter(temp_output_raw, fourcc, fps, (w, h))
+
+    while True:
+        ret, frame = cap.read()
+        if not ret:
+            break
+
+        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+
+        # Krawędzie
+        if edge_method == "sobel":
+            sobelx = cv2.Sobel(gray, cv2.CV_8U, 1, 0, ksize=3)
+            sobely = cv2.Sobel(gray, cv2.CV_8U, 0, 1, ksize=3)
+            edges = cv2.bitwise_or(sobelx, sobely)
+        elif edge_method == "laplacian":
+            edges = cv2.Laplacian(gray, cv2.CV_8U)
+        elif edge_method == "adaptive":
+            edges = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY_INV, 11, 2)
+        elif edge_method == "dog":
+            blur1 = cv2.GaussianBlur(gray, (5, 5), 1)
+            blur2 = cv2.GaussianBlur(gray, (5, 5), 2)
+            edges = cv2.absdiff(blur1, blur2)
+            _, edges = cv2.threshold(edges, 15, 255, cv2.THRESH_BINARY)
+        elif edge_method == "gaussian":
+            blurred = cv2.GaussianBlur(gray, (5, 5), 1)
+            _, edges = cv2.threshold(blurred, 127, 255, cv2.THRESH_BINARY)
+        else:
+            edges = cv2.Canny(gray, 50, 150)
+
+        edges_inv = cv2.bitwise_not(edges)
+        edges_rgb = cv2.cvtColor(edges_inv, cv2.COLOR_GRAY2BGR)
+
+        # Koloryzacja i poster
+        color = cv2.bilateralFilter(frame, 9, 75, 75)
+        data = np.float32(color).reshape((-1, 3))
+        _, labels, centers = cv2.kmeans(
+            data, k, None,
+            (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 100, 0.2),
+            10, cv2.KMEANS_RANDOM_CENTERS
+        )
+        quant = centers[labels.flatten()].reshape(frame.shape).astype(np.uint8)
+
+        hsv = cv2.cvtColor(quant, cv2.COLOR_BGR2HSV)
+        poster_strength = max(1, int(1.0 / brightness * 5))
+        hsv[..., 2] = (hsv[..., 2] // poster_strength) * poster_strength
+        quant = cv2.cvtColor(hsv, cv2.COLOR_HSV2BGR)
+
+        # Halftone
+        if use_halftone:
+            hsv = cv2.cvtColor(quant, cv2.COLOR_BGR2HSV)
+            v = hsv[..., 2]
+            shadow_mask = cv2.inRange(v, 0, 60)
+            shadow_mask_3ch = cv2.cvtColor(shadow_mask, cv2.COLOR_GRAY2BGR)
+            gray_ht = cv2.cvtColor(quant, cv2.COLOR_BGR2GRAY)
+            halftone = generate_halftone(gray_ht, block_size=6)
+            halftone = cv2.cvtColor(halftone, cv2.COLOR_GRAY2BGR)
+            halftone_inv = 255 - halftone
+            masked_halftone = cv2.bitwise_and(halftone_inv, shadow_mask_3ch)
+            quant = cv2.subtract(quant, masked_halftone)
+
+        final = cv2.bitwise_and(quant, edges_rgb) if stroke_enabled else quant
+        out.write(final)
+
+    cap.release()
+    out.release()
+
+    # 🔁 RE-ENCODUJ do H.264 (libx264)
+    subprocess.run([
+        "ffmpeg", "-y",
+        "-i", temp_output_raw,
+        "-c:v", "libx264",
+        "-preset", "ultrafast",
+        "-pix_fmt", "yuv420p",
+        temp_output_final
+    ], check=True)
+
+    with open(temp_output_final, "rb") as f:
+        video_bytes = f.read()
+
+    os.remove(temp_input_path)
+    os.remove(temp_output_raw)
+    os.remove(temp_output_final)
+
+    return Response(content=video_bytes, media_type="video/mp4")

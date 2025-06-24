@@ -27,15 +27,16 @@ function App() {
   const [useHalftone, setUseHalftone] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isPortrait, setIsPortrait] = useState(false);
-    const downloadImage = () => {
-    if (!result) return;
-    const link = document.createElement('a');
-    link.href = result;
-    link.download = 'toon-shader.png';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
+  const [isVideo, setIsVideo] = useState(false);
+const downloadImage = () => {
+  if (!result) return;
+  const link = document.createElement('a');
+  link.href = result;
+  link.download = file?.type?.startsWith("video/") ? 'toon-shader.mp4' : 'toon-shader.png';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+};
 
   const analyzeImage = async (uploadedFile, method) => {
     const formData = new FormData();
@@ -83,36 +84,71 @@ const autoSelectBestMethod = async (file) => {
     setK(analyzedK);
   };
 
-  const handleUpload = async (e) => {
-    const uploaded = e.target.files[0];
-    if (!uploaded) return;
-    setFile(uploaded);
-    setOriginalUrl(URL.createObjectURL(uploaded));
-    setShouldProcess(false);
-    setResult(null);
+const handleUpload = async (e) => {
+  const uploaded = e.target.files[0];
+  if (!uploaded) return;
 
-    const img = new Image();
-    img.onload = () => setIsPortrait(img.height > img.width);
-    img.src = URL.createObjectURL(uploaded);
+  const isVideo = uploaded.type.startsWith("video/");
+  setIsVideo(isVideo);
+  setFile(uploaded);
+  setOriginalUrl(URL.createObjectURL(uploaded));
+  setShouldProcess(false);
+  setResult(null);
 
-    const newPreviews = {};
-    for (const method of edgeMethods) {
+  if (isVideo) {
+    setIsLoading(true);
+    try {
       const formData = new FormData();
-      formData.append('file', uploaded);
-      formData.append('edge_method', method.id);
-      const res = await axios.post('http://localhost:8000/preview/', formData, { responseType: 'blob' });
-      newPreviews[method.id] = URL.createObjectURL(res.data);
+      formData.append("file", uploaded);
+      formData.append("k", k);
+      formData.append("brightness", brightness);
+      formData.append("stroke_enabled", strokeEnabled ? 1 : 0);
+      formData.append("use_halftone", useHalftone ? 1 : 0);
+      formData.append("edge_method", edgeMethod);
+
+      const res = await axios.post("http://localhost:8000/process-video/", formData, {
+        responseType: "blob",
+      });
+
+    const blob = new Blob([res.data], { type: "video/mp4" });
+    const videoUrl = URL.createObjectURL(blob);
+    setResult(videoUrl);
+    } catch (err) {
+      console.error("Błąd przetwarzania wideo:", err);
+    } finally {
+      setIsLoading(false);
     }
-    setPreviews(newPreviews);
 
-    const bestMethod = await autoSelectBestMethod(uploaded);
-    setEdgeMethod(bestMethod);
+    return;
+  }
 
-    const analyzedK = await analyzeImage(uploaded, bestMethod);
-    setSuggestedK(analyzedK);
-    setupSliderFromK(analyzedK);
-    setShouldProcess(true); 
-  };
+  // Obraz – reszta jak wcześniej (preview, analiza, ustawienia suwaków itp.)
+  const img = new Image();
+  img.onload = () => setIsPortrait(img.height > img.width);
+  img.src = URL.createObjectURL(uploaded);
+
+  const newPreviews = {};
+  for (const method of edgeMethods) {
+    const formData = new FormData();
+    formData.append("file", uploaded);
+    formData.append("edge_method", method.id);
+    const res = await axios.post("http://localhost:8000/preview/", formData, {
+      responseType: "blob",
+    });
+    newPreviews[method.id] = URL.createObjectURL(res.data);
+  }
+  setPreviews(newPreviews);
+
+  const bestMethod = await autoSelectBestMethod(uploaded);
+  setEdgeMethod(bestMethod);
+
+  const analyzedK = await analyzeImage(uploaded, bestMethod);
+  setSuggestedK(analyzedK);
+  setupSliderFromK(analyzedK);
+  setShouldProcess(true);
+};
+
+
 
 const handleEdgeMethodChange = async (newMethod) => {
   setEdgeMethod(newMethod);
@@ -127,6 +163,7 @@ const handleEdgeMethodChange = async (newMethod) => {
 };
 
   const processImage = async (file, kVal, method) => {
+    if (isVideo) return; // 🚫 ignoruj dla filmów
     setIsLoading(true);
     const scaledK = Math.round(Math.max(2, Math.min(30, kVal)));
     const formData = new FormData();
@@ -173,25 +210,34 @@ const handleEdgeMethodChange = async (newMethod) => {
       <h1 className="text-3xl font-bold mb-6 text-center">Toon Shader Demo</h1>
 
   <div className="relative w-full flex flex-row gap-4 justify-center items-center">
-    {originalUrl && (
-      <div className="flex flex-col items-center">
-        <p className="text-xs text-gray-500 mb-1">Oryginał</p>
-        <img
-          src={originalUrl}
-          alt="Oryginalny"
-          className="w-[40vw] h-[60vh] object-contain rounded shadow"
-        />
-      </div>
+{originalUrl && (
+  <div className="flex flex-col items-center">
+    <p className="text-xs text-gray-500 mb-1">Oryginał</p>
+    {file?.type?.startsWith("video/") ? (
+      <video
+        src={originalUrl}
+        controls
+        className="w-[40vw] h-[60vh] object-contain rounded shadow"
+      />
+    ) : (
+      <img
+        src={originalUrl}
+        alt="Oryginalny"
+        className="w-[40vw] h-[60vh] object-contain rounded shadow"
+      />
     )}
+  </div>
+)}
 
     {result && (
       <div className="flex flex-col items-center">
         <p className="text-xs text-gray-500 mb-1">Po obróbce</p>
-        <img
-          src={result}
-          alt="Po obóbce"
-          className="w-[40vw] h-[60vh] object-contain rounded shadow"
-        />
+        {file?.type?.startsWith("video/") ? (
+          <video key={result} src={result} controls className="w-[40vw] h-[60vh] object-contain rounded shadow" preload="auto"
+ />
+        ) : (
+          <img src={result} alt="Po obóbce" className="w-[40vw] h-[60vh] object-contain rounded shadow" />
+        )}
       </div>
     )}
 
