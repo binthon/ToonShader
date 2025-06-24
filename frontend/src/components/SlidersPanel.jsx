@@ -12,7 +12,7 @@ function SlidersPanel({
       {/* Suwak K */}
       <div className="flex flex-col gap-2">
         <label className="text-sm font-medium text-gray-700">
-          Współczynnik: {k} | Sugerowany środek: {suggestedK}
+          Współczynnik: {k}
         </label>
         <input
           type="range"

@@ -86,25 +86,28 @@ export function useProcessing() {
     setShouldProcess(false);
     setResult(null);
 
-    if (isVid) {
-      await processVideo(uploaded);
-      return;
-    }
+if (isVid) {
+  return; // ← tylko ustawiamy file i isVideo, a nie przetwarzamy od razu
+}
 
     const img = new Image();
     img.onload = () => setIsPortrait(img.height > img.width);
     img.src = URL.createObjectURL(uploaded);
 
     const newPreviews = {};
-    for (const method of edgeMethods) {
-      const formData = new FormData();
-      formData.append("file", uploaded);
-      formData.append("edge_method", method.id);
-      const res = await axios.post("http://localhost:8000/preview/", formData, {
-        responseType: "blob",
-      });
-      newPreviews[method.id] = URL.createObjectURL(res.data);
-    }
+for (const method of edgeMethods) {
+  const formData = new FormData();
+  formData.append("file", uploaded);
+  formData.append("edge_method", method.id);
+  try {
+    const res = await axios.post("http://localhost:8000/preview/", formData, {
+      responseType: "blob",
+    });
+    newPreviews[method.id] = URL.createObjectURL(res.data);
+  } catch (err) {
+    console.error(`Błąd preview (${method.id}):`, err);
+  }
+}
     setPreviews(newPreviews);
 
     const bestMethod = await autoSelectBestMethod(uploaded);
@@ -140,31 +143,37 @@ export function useProcessing() {
     }
   };
 
-  const processImage = async () => {
-    if (isVideo || !file) return;
-    setIsLoading(true);
-    const scaledK = Math.round(Math.max(2, Math.min(30, k)));
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("k", scaledK);
-    formData.append("edge_method", edgeMethod);
-    formData.append("brightness", brightness);
-    formData.append("stroke_enabled", strokeEnabled ? 1 : 0);
-    formData.append("use_halftone", useHalftone ? 1 : 0);
-    formData.append("use_crosshatch", useCrosshatch ? 1 : 0);
+const processImage = async () => {
+  if (!file) return;
 
-    try {
-      const res = await axios.post("http://localhost:8000/process/", formData, {
-        responseType: "blob",
-      });
-      const blobUrl = URL.createObjectURL(res.data);
-      setResult(blobUrl);
-    } catch (err) {
-      console.error("Błąd przetwarzania obrazu:", err);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  if (isVideo) {
+    await processVideo(file);
+    return;
+  }
+
+  setIsLoading(true);
+  const scaledK = Math.round(Math.max(2, Math.min(30, k)));
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("k", scaledK);
+  formData.append("edge_method", edgeMethod);
+  formData.append("brightness", brightness);
+  formData.append("stroke_enabled", strokeEnabled ? 1 : 0);
+  formData.append("use_halftone", useHalftone ? 1 : 0);
+  formData.append("use_crosshatch", useCrosshatch ? 1 : 0);
+
+  try {
+    const res = await axios.post("http://localhost:8000/process/", formData, {
+      responseType: "blob",
+    });
+    const blobUrl = URL.createObjectURL(res.data);
+    setResult(blobUrl);
+  } catch (err) {
+    console.error("Błąd przetwarzania obrazu:", err);
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   const handleEdgeMethodChange = async (newMethod) => {
     setEdgeMethod(newMethod);
