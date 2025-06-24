@@ -185,3 +185,8 @@ Uruchomienie frontendu
 ```
 npm run dev
 ```
+## Elementu programu do zrobienia lub poprawy
+1. Wdrożenie aplikacji do kontenerów dockerowych
+2. Poprawa szybkości przetwarzania filmów
+3. Poprawa działania ustawiania współczynników
+4. Wizualne poprawy
