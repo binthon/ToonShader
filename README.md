@@ -18,7 +18,8 @@ project-root/
 │   └── ...
 └── README.md
 └── requirements.txt      # Zależności Pythona
-
+└── .gitignore
+```
 ## Uruchomienie
   ### backend 
 ```
