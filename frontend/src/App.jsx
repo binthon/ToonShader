@@ -29,7 +29,7 @@ function App() {
   } = useProcessing();
 
 useEffect(() => {
-  if (file && shouldProcess && !isVideo) { // <-- warunek !isVideo zostaje
+  if (file && shouldProcess && !isVideo) { 
     const timeout = setTimeout(() => {
       processImage();
       setShouldProcess(false);
@@ -43,7 +43,7 @@ useEffect(() => {
 <div class="w-full min-h-screen bg-white px-8 pt-4 font-sans overflow-auto relative">
 
 {!file ? (
-  // Logo wyśrodkowane (gdy brak pliku)
+ 
   <div className="flex justify-center mb-2">
     <img
       src="/clicks.jpg"
@@ -52,7 +52,7 @@ useEffect(() => {
     />
   </div>
 ) : (
-  // Logo absolutnie w rogu (gdy plik wybrany)
+  
   <div className="absolute top-4 left-4 z-10">
     <img
       src="/clicks.jpg"
