@@ -75,48 +75,56 @@ export function useProcessing() {
     return bestMethod;
   };
 
-  const handleUpload = async (e) => {
-    const uploaded = e.target.files[0];
-    if (!uploaded) return;
+ const handleUpload = async (e) => {
+  const uploaded = e.target.files[0];
+  if (!uploaded) return;
 
-    const isVid = uploaded.type.startsWith("video/");
-    setIsVideo(isVid);
-    setFile(uploaded);
-    setOriginalUrl(URL.createObjectURL(uploaded));
-    setShouldProcess(false);
-    setResult(null);
+  const isVid = uploaded.type.startsWith("video/");
+  setIsVideo(isVid);
+  setFile(uploaded);
+  setOriginalUrl(URL.createObjectURL(uploaded));
+  setShouldProcess(false);
+  setResult(null);
 
-if (isVid) {
-  return; // ← tylko ustawiamy file i isVideo, a nie przetwarzamy od razu
-}
-
-    const img = new Image();
-    img.onload = () => setIsPortrait(img.height > img.width);
-    img.src = URL.createObjectURL(uploaded);
-
-    const newPreviews = {};
-for (const method of edgeMethods) {
-  const formData = new FormData();
-  formData.append("file", uploaded);
-  formData.append("edge_method", method.id);
-  try {
-    const res = await axios.post("http://localhost:8000/preview/", formData, {
-      responseType: "blob",
-    });
-    newPreviews[method.id] = URL.createObjectURL(res.data);
-  } catch (err) {
-    console.error(`Błąd preview (${method.id}):`, err);
+  if (isVid) {
+    // Ustawiamy domyślne podglądy dla metod (np. ikona filmu)
+    const videoPreviewIcon = "/clicks.jpg"; // ścieżka do ikony
+    const videoPreviews = {};
+    for (const method of edgeMethods) {
+      videoPreviews[method.id] = videoPreviewIcon;
+    }
+    setPreviews(videoPreviews);
+    return;
   }
-}
-    setPreviews(newPreviews);
 
-    const bestMethod = await autoSelectBestMethod(uploaded);
-    setEdgeMethod(bestMethod);
-    const analyzedK = await analyzeImage(uploaded, bestMethod);
-    setSuggestedK(analyzedK);
-    setupSliderFromK(analyzedK);
-    setShouldProcess(true);
-  };
+  const img = new Image();
+  img.onload = () => setIsPortrait(img.height > img.width);
+  img.src = URL.createObjectURL(uploaded);
+
+  const newPreviews = {};
+  for (const method of edgeMethods) {
+    const formData = new FormData();
+    formData.append("file", uploaded);
+    formData.append("edge_method", method.id);
+    try {
+      const res = await axios.post("http://localhost:8000/preview/", formData, {
+        responseType: "blob",
+      });
+      newPreviews[method.id] = URL.createObjectURL(res.data);
+    } catch (err) {
+      console.error(`Błąd preview (${method.id}):`, err);
+    }
+  }
+  setPreviews(newPreviews);
+
+  const bestMethod = await autoSelectBestMethod(uploaded);
+  setEdgeMethod(bestMethod);
+  const analyzedK = await analyzeImage(uploaded, bestMethod);
+  setSuggestedK(analyzedK);
+  setupSliderFromK(analyzedK);
+  setShouldProcess(true);
+};
+
 
   const processVideo = async (file) => {
     setIsLoading(true);
@@ -192,7 +200,7 @@ return {
   kMin, kMax, kStep,
   edgeMethod, setEdgeMethod,
   result, setResult,
-  lastResult,              // ⬅️ dodaj to
+  lastResult,            
   shouldProcess, setShouldProcess,
   originalUrl,
   suggestedK,
