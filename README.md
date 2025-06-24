@@ -52,7 +52,51 @@ Obsługa przetwarzania obrazów i filmów
 
 UWAGA !!!
 Przetwarzanie filmów trwa długo dlatego przeyłamy link do testowych filmów z nałozonymi shaderami: [LINK](https://drive.google.com/drive/folders/16re2vkY_t5D77moUd4ywdALqecKE4Xz9?usp=sharing)
+### Opis użytych algorytmów krawędziowania
+CANNY
+Opis: Najbardziej znanyalgorytmów detekcji krawędzi.
 
+Działanie:
+- Wygładzenie obrazu (filtr Gaussa),
+- Obliczenie gradientu intensywności pikseli,
+- Non-maximum suppression (usuwanie niepotrzebnych krawędzi),
+- Histereza progowa (łączenie krawędzi na podstawie progów).
+
+SOBEL
+Opis: Prosty operator gradientowy oparty na macierzach konwolucyjnych.
+
+Działanie:
+- Oblicza przybliżony gradient intensywności w kierunkach poziomym i pionowym.
+- Mniej precyzyjny niż Canny, może wykrywać grubsze krawędzie.
+- 
+Laplacian 
+Opis: Operator drugiej pochodnej, wykrywający obszary o szybkiej zmianie intensywności.
+
+Działanie:
+- Oblicza drugą pochodną intensywności (Laplacjan), podkreślając przejścia.
+- Bardzo czuły na szum – wymaga wcześniejszego wygładzenia.
+
+Adaptive Threshold 
+Opis: Technika progowania adaptacyjnego, która dzieli obraz na czarne i białe regiony w zależności od lokalnego sąsiedztwa.
+
+Działanie:
+- Dzieli obraz na regiony i wylicza lokalne progi dla każdego.
+- Nadaje bardzo komiksowy, binarny wygląd.
+- Stylizowany efekt przypominający tuszowanie w komiksach.
+
+Difference of Gaussians
+Opis: Technika przybliżająca Laplace of Gaussian, polegająca na odjęciu dwóch rozmytych wersji obrazu.
+
+Działanie:
+- Gauss(x, σ₁) − Gauss(x, σ₂), gdzie σ₂ > σ₁
+- Kontury przypominające styl mangi/anime, cienkie i stylowe.
+
+Gaussian
+Opis: To nie jest typowe wykrywanie krawędzi, ale filtr wygładzający.
+
+Działanie:
+- Rozmycie Gaussowskie stosowane wstępnie do redukcji szumu.
+- Odpowiedni do efektów soft-shading.
 
 ## Uruchomienie
   ### backend 
