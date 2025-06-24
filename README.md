@@ -1,7 +1,30 @@
 # ToonShader
+Aplikacja webowa umożliwiająca przekształcanie obrazów i filmów w stylizowane wersje z efektami kreskowania, halftone i cieniowania. Interfejs użytkownika oparty jest na React, a backend w Pythonie z użyciem FastAPI.
+## Strukura projektu
+ToonShader/
+│
+├── backend/
+│   ├── main.py               # Główny plik FastAPI
+│   ├── requirements.txt      # Zależności Pythona
+│   └── ...                   # Pliki do analizy i przetwarzania
+│
+├── frontend/
+│   ├── public/
+│   │   └── clicks.jpg        # Logo aplikacji
+│   ├── src/
+│   │   ├── components/       # Komponenty Reacta 
+│   │   ├── hooks/            # Własne hooki (
+│   │   ├── utils/            # Dodatkowe funkcje
+│   │   └── App.jsx           # Główna aplikacja React
+│   ├── package.json          # Konfiguracja npm i zależności
+│   └── tailwind.config.js
+│
+└── README.md
+└── gitignore
+└── requirements.txt
 
-# Uruchomienie
-  ## backend 
+## Uruchomienie
+  ### backend 
 ```
 cd backend
 ```
@@ -23,7 +46,7 @@ Uruchmienie backendu
 uvicorn main:app --reload  
 ```
 
-  ## frontend
+  ### frontend
 
 Wymagane jest posiadanie Node.js 18+ oraz npm.
 Można pobrać te narzędzia z https://nodejs.org/en
