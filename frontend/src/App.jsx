@@ -12,6 +12,7 @@ function App() {
     kMin, kMax, kStep,
     edgeMethod,
     result,
+    lastResult,
     shouldProcess, setShouldProcess,
     originalUrl,
     suggestedK,
@@ -38,8 +39,30 @@ function App() {
   }, [k, shouldProcess, file, edgeMethod]);
 
   return (
-    <div className="w-screen min-h-screen bg-white p-8 font-sans overflow-auto">
-      <h1 className="text-3xl font-bold mb-6 text-center">Toon Shader Demo</h1>
+    
+<div class="w-full min-h-screen bg-white px-8 pt-4 font-sans overflow-auto relative">
+
+{!file ? (
+  // Logo wyśrodkowane (gdy brak pliku)
+  <div className="flex justify-center mb-2">
+    <img
+      src="/clicks.jpg"
+      alt="Toon Shader Logo"
+      className="w-[350px] h-[350px] object-contain"
+    />
+  </div>
+) : (
+  // Logo absolutnie w rogu (gdy plik wybrany)
+  <div className="absolute top-4 left-4 z-10">
+    <img
+      src="/clicks.jpg"
+      alt="Toon Shader Logo"
+      className="w-[160px] h-[160px] object-contain"
+    />
+  </div>
+)}
+
+
 
       <div className="relative w-full flex flex-row gap-4 justify-center items-center">
         {originalUrl && (
@@ -61,34 +84,39 @@ function App() {
           </div>
         )}
 
-        <ProcessedOutput result={result} file={file} />
+{(result || isLoading) && (
+  <ProcessedOutput
+    result={result}
+    file={file}
+    isLoading={isLoading}
+  />
+)}
 
-        {isLoading && (
-          <div className="absolute inset-0 flex items-center justify-center bg-black/10 rounded">
-            <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-          </div>
-        )}
       </div>
 
-      <div className="mt-8 flex flex-col items-center">
+<div className="mt-8 w-full max-w-screen-lg mx-auto px-4 flex flex-col items-center">
         <FileUploader onUpload={handleUpload} />
 
-        <PreviewSelector
-          previews={previews}
-          selected={edgeMethod}
-          onChange={handleEdgeMethodChange}
-        />
+      {file && (
+        <>
+          <PreviewSelector
+            previews={previews}
+            selected={edgeMethod}
+            onChange={handleEdgeMethodChange}
+          />
 
-        <SlidersPanel
-          k={k} setK={(val) => { setK(val); setShouldProcess(true); }}
-          kMin={kMin} kMax={kMax} kStep={kStep}
-          brightness={brightness} setBrightness={(val) => { setBrightness(val); setShouldProcess(true); }}
-          strokeEnabled={strokeEnabled} setStrokeEnabled={(val) => { setStrokeEnabled(val); setShouldProcess(true); }}
-          useHalftone={useHalftone} setUseHalftone={(val) => { setUseHalftone(val); setShouldProcess(true); }}
-          useCrosshatch={useCrosshatch} setUseCrosshatch={(val) => { setUseCrosshatch(val); setShouldProcess(true); }}
-          suggestedK={suggestedK}
-          disabled={!file}
-        />
+          <SlidersPanel
+            k={k} setK={(val) => { setK(val); setShouldProcess(true); }}
+            kMin={kMin} kMax={kMax} kStep={kStep}
+            brightness={brightness} setBrightness={(val) => { setBrightness(val); setShouldProcess(true); }}
+            strokeEnabled={strokeEnabled} setStrokeEnabled={(val) => { setStrokeEnabled(val); setShouldProcess(true); }}
+            useHalftone={useHalftone} setUseHalftone={(val) => { setUseHalftone(val); setShouldProcess(true); }}
+            useCrosshatch={useCrosshatch} setUseCrosshatch={(val) => { setUseCrosshatch(val); setShouldProcess(true); }}
+            suggestedK={suggestedK}
+            disabled={!file}
+          />
+        </>
+      )}
       </div>
     </div>
   );

@@ -33,8 +33,8 @@ async def analyze_image(file: UploadFile = File(...), edge_method: str = Form("c
 async def process_image(
     file: UploadFile = File(...),
     k: int = Form(5),
-    brightness: float = Form(1.0),
-    stroke_enabled: int = Form(1),
+    brightness: float = Form(0.5),
+    stroke_enabled: int = Form(0),
     use_halftone: int = Form(0),
     use_crosshatch: int = Form(0),
     edge_method: str = Form("canny"),

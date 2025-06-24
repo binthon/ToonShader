@@ -1,7 +1,7 @@
-import { useState } from "react";
+
 import axios from "axios";
 import { edgeMethods } from "../utils/edgeMethods";
-
+import { useState, useEffect } from "react";
 export function useProcessing() {
   const [file, setFile] = useState(null);
   const [k, setK] = useState(5);
@@ -21,7 +21,10 @@ export function useProcessing() {
   const [isPortrait, setIsPortrait] = useState(false);
   const [isVideo, setIsVideo] = useState(false);
   const [useCrosshatch, setUseCrosshatch] = useState(false);
+  const [lastResult, setLastResult] = useState(null);
 
+
+  
   const setupSliderFromK = (analyzedK) => {
     const range = analyzedK < 10 ? 5 : Math.round(analyzedK * 0.5);
     const min = Math.max(0, analyzedK - range);
@@ -40,6 +43,12 @@ export function useProcessing() {
     const res = await axios.post("http://localhost:8000/analyze/", formData);
     return res.data.suggested_k;
   };
+
+  useEffect(() => {
+  if (result) {
+    setLastResult(result);
+  }
+}, [result]);
 
   const autoSelectBestMethod = async (file) => {
     let bestMethod = "canny";
@@ -164,30 +173,30 @@ export function useProcessing() {
       const analyzedK = await analyzeImage(file, newMethod);
       setSuggestedK(analyzedK);
       setupSliderFromK(analyzedK);
-      setResult(null);
       setShouldProcess(true);
     }
   };
 
-  return {
-    file, setFile,
-    k, setK,
-    kMin, kMax, kStep,
-    edgeMethod, setEdgeMethod,
-    result, setResult,
-    shouldProcess, setShouldProcess,
-    originalUrl,
-    suggestedK,
-    previews,
-    brightness, setBrightness,
-    strokeEnabled, setStrokeEnabled,
-    useHalftone, setUseHalftone,
-    useCrosshatch, setUseCrosshatch,
-    isLoading,
-    isPortrait,
-    isVideo,
-    handleUpload,
-    processImage,
-    handleEdgeMethodChange
-  };
+return {
+  file, setFile,
+  k, setK,
+  kMin, kMax, kStep,
+  edgeMethod, setEdgeMethod,
+  result, setResult,
+  lastResult,              // ⬅️ dodaj to
+  shouldProcess, setShouldProcess,
+  originalUrl,
+  suggestedK,
+  previews,
+  brightness, setBrightness,
+  strokeEnabled, setStrokeEnabled,
+  useHalftone, setUseHalftone,
+  useCrosshatch, setUseCrosshatch,
+  isLoading,
+  isPortrait,
+  isVideo,
+  handleUpload,
+  processImage,
+  handleEdgeMethodChange
+};
 }
