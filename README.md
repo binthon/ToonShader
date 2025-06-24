@@ -1,5 +1,27 @@
 # ToonShader
 Aplikacja webowa umożliwiająca przekształcanie obrazów i filmów w stylizowane wersje z efektami kreskowania, halftone i cieniowania. Interfejs użytkownika oparty jest na React, a backend w Pythonie z użyciem FastAPI.
+
+## Uzyte narzędzia
+Frontend (React)
+- React – interfejs użytkownika
+- Vite – szybki bundler i dev server
+- Tailwind CSS – stylowanie komponentów
+- Axios – komunikacja z backendem (API)
+- JavaScript 
+- File API / Blob API – podgląd przesłanych plików
+- React Hooks – zarządzanie stanem (useState, useEffect, useProcessing)
+
+Backend (FastAPI + Python)
+- Python 3.10+
+- FastAPI – serwer API
+- Uvicorn – ASGI server do uruchamiania backendu
+- OpenCV – przetwarzanie obrazu i wideo
+- NumPy – operacje macierzowe
+- Pillow (PIL) – zapis obrazów, konwersje
+- imageio-ffmpeg – składanie wideo z klatek
+- python-multipart – obsługa plików FormData
+
+
 ## Strukura projektu
 ```csharp
 ToonShader/
@@ -10,10 +32,10 @@ ToonShader/
 │   │   ├── image.py # obsługa przetwaarzania obrazów 
 │   │   └── video.py # obsługa przetwarzania filmów
 |   |   └── tools.py
-│   ├── services/
-│   │   ├── edge.py # wykrywanie krawędzi
-│   │   └── filters.py # implementacja efektów: halftone, crosshatch, kreskowanie
-|   |   └── utils.py
+│   └── services/
+│      ├── edge.py # wykrywanie krawędzi
+│      └── filters.py # implementacja efektów: halftone, crosshatch, kreskowanie
+|      └── utils.py
 │   
 │
 ├── frontend/
