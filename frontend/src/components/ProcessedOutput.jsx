@@ -1,4 +1,4 @@
-function ProcessedOutput({ result, file }) {
+function ProcessedOutput({ result, file, isLoading }) {
   const download = () => {
     if (!result) return;
     const link = document.createElement("a");
@@ -9,44 +9,60 @@ function ProcessedOutput({ result, file }) {
     document.body.removeChild(link);
   };
 
-  if (!result) return null;
+  if (!result && !isLoading) return null;
 
   const isVideo = file?.type?.startsWith("video/");
 
   return (
-<div className="flex flex-col items-center relative group w-[40vw] h-[60vh]">
+    <div className="flex flex-col items-center relative group w-[40vw] h-[60vh]">
       <p className="text-xs text-gray-500 mb-1">Po obróbce</p>
 
       {isVideo ? (
-        <video
-          key={result}
-          src={result}
-          controls
-          className="w-full h-full object-contain rounded shadow"
-          preload="auto"
-        />
+        result ? (
+          <video
+            key={result}
+            src={result}
+            controls
+            className="w-full h-full object-contain rounded shadow"
+            preload="auto"
+          />
+        ) : (
+          <div className="w-full h-full bg-gray-100 rounded" />
+        )
       ) : (
         <div className="relative w-full h-full">
-          <img
-            src={result}
-            alt="Po obróbce"
-            className="w-full h-full object-contain rounded shadow"
-          />
-          <button
-            onClick={download}
-            className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity bg-white/90 hover:bg-white rounded-full p-2 shadow"
-            aria-label="Pobierz obraz"
-          >
+          {result && (
             <img
-              src="/icons8-download-16.png"
-              alt="Pobierz"
-              className="w-4 h-4"
+              src={result}
+              alt="Po obróbce"
+              className="w-full h-full object-contain rounded shadow"
             />
-          </button>
+          )}
+
+          {isLoading && (
+            <div className="absolute inset-0 flex items-center justify-center bg-white/60 rounded">
+              <div className="w-10 h-10 border-4 border-black border-t-transparent rounded-full animate-spin" />
+            </div>
+          )}
+
+          {result && (
+            <button
+              onClick={download}
+              className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity bg-white/90 hover:bg-white rounded-full p-2 shadow"
+              aria-label="Pobierz obraz"
+            >
+              <img
+                src="/icons8-download-16.png"
+                alt="Pobierz"
+                className="w-4 h-4"
+              />
+            </button>
+          )}
         </div>
       )}
     </div>
   );
 }
+
 
 export default ProcessedOutput;
