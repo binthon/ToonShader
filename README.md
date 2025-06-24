@@ -38,7 +38,20 @@ ToonShader/
 └── .gitignore
 ```
 ## Opis funkcjonalności
+Obsługa przetwarzania obrazów i filmów
 
+1. Automatyczne wykrywanie najlepszego algorytmu krawędziowania
+2. Dynamiczne suwaki: współczynnik K, jasność
+3. Efekty dodatkowe:
+  - Efekt kreskowania
+  - Halftone 
+  - Crosshatch shading
+4. Podgląd wyników przetwarzania w czasie rzeczywistym
+5. Podgląd wielu algorytmów na podstawie obrazu 
+6. Przycisk do generowania filmu – manualnie, po wybraniu ustawień
+
+UWAGA !!!
+Przetwarzanie filmów trwa długo dlatego przeyłamy link do testowych filmów z nałozonymi shaderami: [LINK]https://drive.google.com/drive/folders/16re2vkY_t5D77moUd4ywdALqecKE4Xz9?usp=sharing
 
 ## Uruchomienie
   ### backend 
