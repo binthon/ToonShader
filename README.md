@@ -94,7 +94,7 @@ Działanie:
 - Rozmycie Gaussowskie stosowane wstępnie do redukcji szumu.
 - Odpowiedni do efektów soft-shading.
 
-### Opis działania programu
+## Opis działania programu
  1. Przesyłanie pliku (obraz lub wideo) – Frontend <br>
 Użytkownik przeciąga lub wybiera plik (obraz .jpg / .png lub wideo .mp4) za pomocą komponentu FileUploader. <br>
 Plik ten jest przechowywany lokalnie (w stanie file) i tworzony jest jego URL.createObjectURL() do podglądu. <br>
@@ -110,9 +110,8 @@ Backend (FastAPI):
 - /preview/: dla każdej metody (canny, sobel, itd.) przetwarza obraz i zwraca mały podgląd w stylu wybranej metody. 
 
 Dla wideo: 
-Frontend wyciąga pierwszą klatkę z wideo w przeglądarce (za pomocą canvas) i traktuje ją jak obraz. 
-
-Ta klatka jest następnie wysyłana do backendu, jakby była obrazem, by wygenerować podglądy i analizę k. 
+Frontend wyciąga pierwszą klatkę z wideo w przeglądarce (za pomocą canvas) i traktuje ją jak obraz. <br>
+Ta klatka jest następnie wysyłana do backendu, jakby była obrazem, by wygenerować podglądy i analizę k. <br>
 
 3. Użytkownik wybiera ustawienia – Frontend 
 Z poziomu UI użytkownik ustawia: 
