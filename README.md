@@ -95,9 +95,9 @@ Działanie:
 - Odpowiedni do efektów soft-shading.
 
 ### Opis działania programu
- 1. Przesyłanie pliku (obraz lub wideo) – Frontend
-Użytkownik przeciąga lub wybiera plik (obraz .jpg / .png lub wideo .mp4) za pomocą komponentu FileUploader. 
-Plik ten jest przechowywany lokalnie (w stanie file) i tworzony jest jego URL.createObjectURL() do podglądu. 
+ 1. Przesyłanie pliku (obraz lub wideo) – Frontend <br>
+Użytkownik przeciąga lub wybiera plik (obraz .jpg / .png lub wideo .mp4) za pomocą komponentu FileUploader. <br>
+Plik ten jest przechowywany lokalnie (w stanie file) i tworzony jest jego URL.createObjectURL() do podglądu. <br>
 
 2. Analiza pliku i generowanie podglądów – Backend + Frontend 
 Dla obrazu: 
@@ -137,9 +137,9 @@ Backend:
 - Zwraca gotowy video/mp4 jako wynik
 
 6. Wynik – Frontend
-Otrzymany Blob (obraz lub film) jest zamieniany na URL.createObjectURL.
-Wyświetlany w komponencie ProcessedOutput obok oryginału.
-Jeśli trwa przetwarzanie – pokazuje się spinner i informacja o czasie oczekiwania.
+Otrzymany Blob (obraz lub film) jest zamieniany na URL.createObjectURL. <br>
+Wyświetlany w komponencie ProcessedOutput obok oryginału. <br>
+Jeśli trwa przetwarzanie – pokazuje się spinner i informacja o czasie oczekiwania.<br>
 
 ## Uruchomienie
   ### backend 
