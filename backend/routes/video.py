@@ -104,3 +104,49 @@ async def process_video(
     os.remove(temp_output_final)
 
     return Response(content=video_bytes, media_type="video/mp4")
+
+@router.post("/preview/")
+async def preview(
+    file: UploadFile = File(...),
+    edge_method: str = Form("canny")
+):
+    ext = file.filename.split(".")[-1]
+    temp_path = os.path.join(tempfile.gettempdir(), f"{uuid.uuid4()}.{ext}")
+    contents = await file.read()
+
+    with open(temp_path, "wb") as f:
+        f.write(contents)
+
+    # Obsługa wideo
+    if file.content_type.startswith("video/"):
+        cap = cv2.VideoCapture(temp_path)
+        success, frame = cap.read()
+        cap.release()
+        os.remove(temp_path)
+
+        if not success:
+            return JSONResponse(content={"error": "Nie udało się odczytać pierwszej klatki"}, status_code=400)
+
+        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        edges = detect_edges(gray, edge_method)
+        edges_inv = cv2.bitwise_not(edges)
+        edges_rgb = cv2.cvtColor(edges_inv, cv2.COLOR_GRAY2BGR)
+        result = cv2.bitwise_and(frame, edges_rgb)
+    else:
+        # Obsługa obrazka
+        np_arr = np.frombuffer(contents, np.uint8)
+        img = cv2.imdecode(np_arr, cv2.IMREAD_COLOR)
+        os.remove(temp_path)
+
+        if img is None:
+            return JSONResponse(content={"error": "Nie udało się wczytać obrazu"}, status_code=400)
+
+        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        edges = detect_edges(gray, edge_method)
+        edges_inv = cv2.bitwise_not(edges)
+        edges_rgb = cv2.cvtColor(edges_inv, cv2.COLOR_GRAY2BGR)
+        result = cv2.bitwise_and(img, edges_rgb)
+
+    # Kodowanie do PNG
+    _, buffer = cv2.imencode(".png", result)
+    return Response(content=buffer.tobytes(), media_type="image/png")

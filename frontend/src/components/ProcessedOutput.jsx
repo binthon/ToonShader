@@ -17,19 +17,39 @@ function ProcessedOutput({ result, file, isLoading }) {
     <div className="flex flex-col items-center relative group w-[40vw] h-[60vh]">
       <p className="text-xs text-gray-500 mb-1">Po obróbce</p>
 
-      {isVideo ? (
-        result ? (
-          <video
-            key={result}
-            src={result}
-            controls
-            className="w-full h-full object-contain rounded shadow"
-            preload="auto"
-          />
-        ) : (
-          <div className="w-full h-full bg-gray-100 rounded" />
-        )
-      ) : (
+{isVideo ? (
+  <div className="relative w-full h-full">
+    {result && (
+      <video
+        key={result}
+        src={result}
+        controls
+        className="w-full h-full object-contain rounded shadow"
+        preload="auto"
+      />
+    )}
+
+    {isLoading && (
+      <div className="absolute inset-0 flex items-center justify-center bg-white/60 rounded">
+        <div className="w-10 h-10 border-4 border-black border-t-transparent rounded-full animate-spin" />
+      </div>
+    )}
+
+    {result && (
+      <button
+        onClick={download}
+        className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity bg-white/90 hover:bg-white rounded-full p-2 shadow"
+        aria-label="Pobierz video"
+      >
+        <img
+          src="/icons8-download-16.png"
+          alt="Pobierz"
+          className="w-4 h-4"
+        />
+      </button>
+    )}
+  </div>
+) : (
         <div className="relative w-full h-full">
           {result && (
             <img

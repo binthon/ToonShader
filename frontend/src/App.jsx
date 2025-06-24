@@ -28,15 +28,15 @@ function App() {
     handleEdgeMethodChange,
   } = useProcessing();
 
-  useEffect(() => {
-    if (file && shouldProcess) {
-      const timeout = setTimeout(() => {
-        processImage();
-        setShouldProcess(false);
-      }, 300);
-      return () => clearTimeout(timeout);
-    }
-  }, [k, shouldProcess, file, edgeMethod]);
+useEffect(() => {
+  if (file && shouldProcess && !isVideo) { // <-- warunek !isVideo zostaje
+    const timeout = setTimeout(() => {
+      processImage();
+      setShouldProcess(false);
+    }, 300);
+    return () => clearTimeout(timeout);
+  }
+}, [k, shouldProcess, file, edgeMethod, isVideo]);
 
   return (
     
@@ -98,6 +98,7 @@ function App() {
         <FileUploader onUpload={handleUpload} />
 
       {file && (
+        
         <>
           <PreviewSelector
             previews={previews}
@@ -115,9 +116,29 @@ function App() {
             suggestedK={suggestedK}
             disabled={!file}
           />
+          {isVideo && (
+  <div className="mt-6  mb-8 flex flex-col items-center">
+    <button
+      onClick={processImage}
+      disabled={isLoading}
+      className={`px-6 py-3 rounded-lg text-white font-semibold transition duration-200 ${
+        isLoading ? 'bg-gray-400 cursor-not-allowed' : 'bg-emerald-700 hover:bg-emerald-800'
+      }`}
+    >
+      🎬 {isLoading ? 'Trwa generowanie...' : 'Generuj wideo'}
+    </button>
+
+    {isLoading && (
+      <p className="mt-2 mb-8 text-sm text-gray-600">
+        Przetwarzanie filmu – może to chwilę potrwać...☕
+      </p>
+    )}
+  </div>
+)}
         </>
       )}
       </div>
+      
     </div>
   );
 }
