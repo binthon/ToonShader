@@ -99,22 +99,22 @@ Działanie:
 Użytkownik przeciąga lub wybiera plik (obraz .jpg / .png lub wideo .mp4) za pomocą komponentu FileUploader. <br>
 Plik ten jest przechowywany lokalnie (w stanie file) i tworzony jest jego URL.createObjectURL() do podglądu. <br>
 
-2. Analiza pliku i generowanie podglądów – Backend + Frontend 
+2. Analiza pliku i generowanie podglądów – Backend + Frontend <br>
 Dla obrazu: 
 Frontend (React): 
 - Wysyła obraz do endpointu /analyze/ – backend analizuje obraz i zwraca sugerowaną wartość k (używaną np. w segmentacji). 
 - Równolegle wysyła wiele żądań /preview/ z tym obrazem i różnymi edge_method, aby wygenerować podglądy metod konturowania. 
 
-Backend (FastAPI): 
+Backend (FastAPI): <br>
 - /analyze/: analizuje zagęszczenie konturów i sugeruje k. 
 - /preview/: dla każdej metody (canny, sobel, itd.) przetwarza obraz i zwraca mały podgląd w stylu wybranej metody. 
 
-Dla wideo: 
+Dla wideo: <br>
 Frontend wyciąga pierwszą klatkę z wideo w przeglądarce (za pomocą canvas) i traktuje ją jak obraz. <br>
 Ta klatka jest następnie wysyłana do backendu, jakby była obrazem, by wygenerować podglądy i analizę k. <br>
 
-3. Użytkownik wybiera ustawienia – Frontend 
-Z poziomu UI użytkownik ustawia: 
+3. Użytkownik wybiera ustawienia – Frontend <br>
+Z poziomu UI użytkownik ustawia: <br>
 - metodę konturów (edgeMethod) 
 - suwak k 
 - jasność (brightness) 
@@ -122,20 +122,20 @@ Z poziomu UI użytkownik ustawia:
 
 Zmiana wartości uruchamia setShouldProcess(true), co powoduje przetwarzanie (dla obrazów). 
 
-4. Przetwarzanie obrazu – Backend 
-Endpoint /process/: 
+4. Przetwarzanie obrazu – Backend <br>
+Endpoint /process/: <br>
 - Odbiera przesłany obraz i wszystkie parametry (k, brightness, stroke, itp.)
 - Przetwarza obraz za pomocą OpenCV i PIL (krok po kroku: kontury, posterizacja, efekty, nakładki)
 - Zwraca gotowy wynik w formie obrazu (image/jpeg)
 
-5. Przetwarzanie wideo – Backend
-Po kliknięciu "Generuj wideo", frontend wysyła całe wideo do /process-video/.
-Backend:
+5. Przetwarzanie wideo – Backend <br>
+Po kliknięciu "Generuj wideo", frontend wysyła całe wideo do /process-video/. <br>
+Backend: <br>
 - Przetwarza każdą klatkę jak obraz (jak w /process/)
 - Składa je z powrotem w film (imageio-ffmpeg)
 - Zwraca gotowy video/mp4 jako wynik
 
-6. Wynik – Frontend
+6. Wynik – Frontend <br>
 Otrzymany Blob (obraz lub film) jest zamieniany na URL.createObjectURL. <br>
 Wyświetlany w komponencie ProcessedOutput obok oryginału. <br>
 Jeśli trwa przetwarzanie – pokazuje się spinner i informacja o czasie oczekiwania.<br>
