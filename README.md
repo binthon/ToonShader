@@ -22,7 +22,7 @@ ToonShader/
 │   ├── src/
 │   │   ├── components/
 │   │   │   ├── FileUploader.jsx # ładowanie plików
-│   │   │   ├── PreviewSelector.jsx # Kkomponent do wyboru algorytmu krawędzi na podstawie podglądów
+│   │   │   ├── PreviewSelector.jsx # komponent do wyboru algorytmu krawędzi na podstawie podglądów
 │   │   │   ├── SlidersPanel.jsx # suwaki, checkoboxy
 │   │   │   └── ProcessedOutput.jsx # komponent do wyświetlania obrazu, filmu
 │   │   ├── hooks/
