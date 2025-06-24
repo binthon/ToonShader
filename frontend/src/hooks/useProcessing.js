@@ -87,7 +87,6 @@ export function useProcessing() {
   setResult(null);
 
   if (isVid) {
-    // Ustawiamy domyślne podglądy dla metod (np. ikona filmu)
     const videoPreviewIcon = "/clicks.jpg"; // ścieżka do ikony
     const videoPreviews = {};
     for (const method of edgeMethods) {
