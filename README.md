@@ -1,7 +1,7 @@
 # ToonShader
 
 # Uruchomienie
-backend 
+  ## backend 
 ```
 cd backend
 ```
@@ -23,7 +23,7 @@ Uruchmienie backendu
 uvicorn main:app --reload  
 ```
 
-frontend
+  ## frontend
 
 Wymagane jest posiadanie Node.js 18+ oraz npm.
 Można pobrać te narzędzia z https://nodejs.org/en
