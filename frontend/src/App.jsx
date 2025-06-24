@@ -43,8 +43,8 @@ function App() {
 
       <div className="relative w-full flex flex-row gap-4 justify-center items-center">
         {originalUrl && (
-          <div className="flex flex-col items-center">
-            <p className="text-xs text-gray-500 mb-1">Oryginał</p>
+<div className="w-[40vw] h-[60vh] flex flex-col items-center">
+  <p className="text-xs text-gray-500 mb-1">Oryginał</p>
             {file?.type?.startsWith("video/") ? (
               <video
                 src={originalUrl}

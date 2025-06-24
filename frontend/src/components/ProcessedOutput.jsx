@@ -9,23 +9,44 @@ function ProcessedOutput({ result, file }) {
     document.body.removeChild(link);
   };
 
-  return result ? (
-    <div className="flex flex-col items-center mt-6">
-      <p className="text-xs text-gray-500 mb-1">Po obróbce</p>
-      {file?.type?.startsWith("video/") ? (
-        <video key={result} src={result} controls className="w-[40vw] h-[60vh] object-contain rounded shadow" preload="auto" />
-      ) : (
-        <img src={result} alt="Po obróbce" className="w-[40vw] h-[60vh] object-contain rounded shadow" />
-      )}
+  if (!result) return null;
 
-      <button
-        onClick={download}
-        className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
-      >
-        Pobierz przetworzony obraz
-      </button>
+  const isVideo = file?.type?.startsWith("video/");
+
+  return (
+<div className="flex flex-col items-center relative group w-[40vw] h-[60vh]">
+      <p className="text-xs text-gray-500 mb-1">Po obróbce</p>
+
+      {isVideo ? (
+        <video
+          key={result}
+          src={result}
+          controls
+          className="w-full h-full object-contain rounded shadow"
+          preload="auto"
+        />
+      ) : (
+        <div className="relative w-full h-full">
+          <img
+            src={result}
+            alt="Po obróbce"
+            className="w-full h-full object-contain rounded shadow"
+          />
+          <button
+            onClick={download}
+            className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity bg-white/90 hover:bg-white rounded-full p-2 shadow"
+            aria-label="Pobierz obraz"
+          >
+            <img
+              src="/icons8-download-16.png"
+              alt="Pobierz"
+              className="w-4 h-4"
+            />
+          </button>
+        </div>
+      )}
     </div>
-  ) : null;
+  );
 }
 
 export default ProcessedOutput;
