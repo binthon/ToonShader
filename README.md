@@ -3,22 +3,40 @@ Aplikacja webowa umożliwiająca przekształcanie obrazów i filmów w stylizowa
 ## Strukura projektu
 ```csharp
 project-root/
+│
 ├── backend/
-│   ├── main.py               # Główny plik FastAPI
+│   ├── main.py
+│   ├── routes/
+│   │   ├── image.py
+│   │   └── video.py
+|   |   └── tools.py
+│   ├── services/
+│   │   ├── edge.py
+│   │   └── filters.py
+|   |   └── utils.py
 │   
+│
 ├── frontend/
 │   ├── public/
-│   │   └── clicks.jpg        # Logo aplikacji
+│   │   └── clicks.jpg
 │   ├── src/
-│   │   ├── components/       # Komponenty Reacta
-│   │   ├── hooks/            # Hooki
-│   │   ├── utils/            # Narzędzia
-│   │   └── App.jsx           # Główna aplikacja
+│   │   ├── components/
+│   │   │   ├── FileUploader.jsx
+│   │   │   ├── PreviewSelector.jsx
+│   │   │   ├── SlidersPanel.jsx
+│   │   │   └── ProcessedOutput.jsx
+│   │   ├── hooks/
+│   │   │   └── useProcessing.jsx
+│   │   ├── utils/
+│   │   │   └── edgeMethods.js
+│   │   └── App.jsx
 │   ├── package.json
-│   └── ...
+│   └── tailwind.config.js
+│
 └── README.md
-└── requirements.txt      # Zależności Pythona
+└── requirements.txt
 └── .gitignore
+
 ```
 ## Uruchomienie
   ### backend 
