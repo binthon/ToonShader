@@ -51,7 +51,8 @@ Obsługa przetwarzania obrazów i filmów
 6. Przycisk do generowania filmu – manualnie, po wybraniu ustawień
 
 UWAGA !!!
-Przetwarzanie filmów trwa długo dlatego przeyłamy link do testowych filmów z nałozonymi shaderami: [LINK]https://drive.google.com/drive/folders/16re2vkY_t5D77moUd4ywdALqecKE4Xz9?usp=sharing
+Przetwarzanie filmów trwa długo dlatego przeyłamy link do testowych filmów z nałozonymi shaderami: [LINK](https://drive.google.com/drive/folders/16re2vkY_t5D77moUd4ywdALqecKE4Xz9?usp=sharing)
+
 
 ## Uruchomienie
   ### backend 
