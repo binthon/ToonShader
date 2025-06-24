@@ -28,6 +28,8 @@ function App() {
   const [isLoading, setIsLoading] = useState(false);
   const [isPortrait, setIsPortrait] = useState(false);
   const [isVideo, setIsVideo] = useState(false);
+  const [useCrosshatch, setUseCrosshatch] = useState(false);
+
 const downloadImage = () => {
   if (!result) return;
   const link = document.createElement('a');
@@ -173,6 +175,7 @@ const handleEdgeMethodChange = async (newMethod) => {
     formData.append('brightness', brightness);
     formData.append('stroke_enabled', strokeEnabled ? 1 : 0);
     formData.append('use_halftone', useHalftone ? 1 : 0);
+    formData.append('use_crosshatch', useCrosshatch ? 1 : 0);
 
     try {
       const res = await axios.post('http://localhost:8000/process/', formData, { responseType: 'blob' });
@@ -339,7 +342,19 @@ const handleEdgeMethodChange = async (newMethod) => {
             />
             Efekt halftone (komiksowe kropki)
           </label>
-          
+          <label className="text-sm font-medium text-gray-700 block mt-2">
+  <input
+    type="checkbox"
+    checked={useCrosshatch}
+    onChange={(e) => {
+      setUseCrosshatch(e.target.checked);
+      setShouldProcess(true);
+    }}
+    disabled={!file}
+    className="mr-2"
+  />
+  Crosshatch shading (cieniowanie kreskowe)
+</label>
         </div>
       </div>
     </div>

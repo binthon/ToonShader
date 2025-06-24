@@ -30,6 +30,24 @@ def resize_image(img, max_dim=800):
         img = cv2.resize(img, (int(w * scale), int(h * scale)), interpolation=cv2.INTER_AREA)
     return img
 
+def apply_crosshatch_shading(img, spacing=4):
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    crosshatch = np.ones_like(gray) * 255
+    
+    for i in range(0, gray.shape[0], spacing):
+        for j in range(0, gray.shape[1], spacing):
+            val = gray[i, j]
+            if val < 50:
+                cv2.line(crosshatch, (j, i), (j + spacing, i + spacing), 0, 1)
+                cv2.line(crosshatch, (j + spacing, i), (j, i + spacing), 0, 1)
+            elif val < 100:
+                cv2.line(crosshatch, (j, i), (j + spacing, i + spacing), 0, 1)
+            elif val < 150:
+                cv2.line(crosshatch, (j + spacing, i), (j, i + spacing), 0, 1)
+
+    crosshatch_bgr = cv2.cvtColor(crosshatch, cv2.COLOR_GRAY2BGR)
+    return cv2.subtract(img, 255 - crosshatch_bgr)
+
 def generate_halftone(gray_img, block_size=6):
     h, w = gray_img.shape
     halftone = np.ones((h, w), dtype=np.uint8) * 255
@@ -90,6 +108,7 @@ async def process_image(
     brightness: float = Form(1.0),
     stroke_enabled: int = Form(1),
     use_halftone: int = Form(0),  # nowy
+    use_crosshatch: int = Form(0),
     edge_method: str = Form("canny"),
     
 ):
@@ -170,7 +189,12 @@ async def process_image(
         masked_halftone = cv2.bitwise_and(halftone_inv, shadow_mask_3ch)
         quant = cv2.subtract(quant, masked_halftone)
 
-    toon = cv2.bitwise_and(quant, edges_rgb) if stroke_enabled else quant
+    if stroke_enabled:
+        toon = cv2.bitwise_and(quant, edges_rgb)
+    elif use_crosshatch:
+        toon = apply_crosshatch_shading(quant)
+    else:
+        toon = quant
     _, img_encoded = cv2.imencode('.png', toon)
     return Response(content=img_encoded.tobytes(), media_type="image/png")
 
@@ -256,7 +280,8 @@ async def process_video(
     k: int = Form(5),
     brightness: float = Form(1.0),
     stroke_enabled: int = Form(1),
-    use_halftone: int = Form(0),
+    use_halftone: int = Form(1),
+    use_crosshatch: int = Form(0),
     edge_method: str = Form("canny")
 ):
     temp_dir = tempfile.gettempdir()
@@ -333,7 +358,12 @@ async def process_video(
             masked_halftone = cv2.bitwise_and(halftone_inv, shadow_mask_3ch)
             quant = cv2.subtract(quant, masked_halftone)
 
-        final = cv2.bitwise_and(quant, edges_rgb) if stroke_enabled else quant
+        if stroke_enabled:
+            final = cv2.bitwise_and(quant, edges_rgb)
+        elif use_crosshatch:
+            final = apply_crosshatch_shading(quant)
+        else:
+            final = quant
         out.write(final)
 
     cap.release()
