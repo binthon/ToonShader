@@ -2,17 +2,17 @@
 Aplikacja webowa umożliwiająca przekształcanie obrazów i filmów w stylizowane wersje z efektami kreskowania, halftone i cieniowania. Interfejs użytkownika oparty jest na React, a backend w Pythonie z użyciem FastAPI.
 ## Strukura projektu
 ```csharp
-project-root/
+ToonShader/
 │
 ├── backend/
 │   ├── main.py
 │   ├── routes/
-│   │   ├── image.py
-│   │   └── video.py
+│   │   ├── image.py # obsługa przetwaarzania obrazów 
+│   │   └── video.py # obsługa przetwarzania filmów
 |   |   └── tools.py
 │   ├── services/
-│   │   ├── edge.py
-│   │   └── filters.py
+│   │   ├── edge.py # wykrywanie krawędzi
+│   │   └── filters.py # implementacja efektów: halftone, crosshatch, kreskowanie
 |   |   └── utils.py
 │   
 │
@@ -21,23 +21,25 @@ project-root/
 │   │   └── clicks.jpg
 │   ├── src/
 │   │   ├── components/
-│   │   │   ├── FileUploader.jsx
-│   │   │   ├── PreviewSelector.jsx
-│   │   │   ├── SlidersPanel.jsx
-│   │   │   └── ProcessedOutput.jsx
+│   │   │   ├── FileUploader.jsx # ładowanie plików
+│   │   │   ├── PreviewSelector.jsx # Kkomponent do wyboru algorytmu krawędzi na podstawie podglądów
+│   │   │   ├── SlidersPanel.jsx # suwaki, checkoboxy
+│   │   │   └── ProcessedOutput.jsx # komponent do wyświetlania obrazu, filmu
 │   │   ├── hooks/
-│   │   │   └── useProcessing.jsx
+│   │   │   └── useProcessing.jsx # hook do zarządzania stanem i komunikacją z backendem
 │   │   ├── utils/
-│   │   │   └── edgeMethods.js
-│   │   └── App.jsx
-│   ├── package.json
+│   │   │   └── edgeMethods.js # Lista dostępnych algorytmów krawędziowania
+│   │   └── App.jsx # główna aplikacja Reacta
+│   ├── package.json # zależności i skrypty frontendowe
 │   └── tailwind.config.js
 │
 └── README.md
 └── requirements.txt
 └── .gitignore
-
 ```
+## Opis funkcjonalności
+
+
 ## Uruchomienie
   ### backend 
 ```
