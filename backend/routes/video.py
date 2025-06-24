@@ -3,6 +3,7 @@ from fastapi.responses import JSONResponse
 import os, uuid, tempfile, subprocess
 import cv2
 import numpy as np
+import imageio_ffmpeg
 
 from services.edge import detect_edges
 from services.filters import generate_halftone, apply_crosshatch_shading
@@ -81,14 +82,19 @@ async def process_video(
     cap.release()
     out.release()
 
-    subprocess.run([
-        "ffmpeg", "-y",
+    ffmpeg_exe = imageio_ffmpeg.get_ffmpeg_exe()
+
+    cmd = [
+        ffmpeg_exe,
+        "-y",
         "-i", temp_output_raw,
         "-c:v", "libx264",
         "-preset", "ultrafast",
         "-pix_fmt", "yuv420p",
         temp_output_final
-    ], check=True)
+    ]
+
+    subprocess.run(cmd, check=True)
 
     with open(temp_output_final, "rb") as f:
         video_bytes = f.read()
